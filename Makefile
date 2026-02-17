@@ -15,7 +15,6 @@ PYTHON_INTERPRETER = python
 .PHONY: requirements
 requirements:
 	uv sync
-	
 
 
 
@@ -25,6 +24,10 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 
+## Remove data, models and logs artifacts
+.PHONY: clean_artifacts
+clean_artifacts:
+	rm -rf data/bronze data/silver data/gold models logs
 
 ## Lint using ruff (use `make format` to do formatting)
 .PHONY: lint
@@ -39,7 +42,6 @@ format:
 	uv run ruff format
 
 
-
 ## Run tests with pytest
 .PHONY: test
 test:
@@ -49,16 +51,38 @@ test:
 ## Set up Python interpreter environment
 .PHONY: create_environment
 create_environment:
-	pipenv --python $(PYTHON_VERSION)
-	@echo ">>> New pipenv created. Activate with:\npipenv shell"
-	
+	uv venv --python $(PYTHON_VERSION)
+	@echo ">>> New venv created. Activate with: source .venv/bin/activate"
 
 
+## Run bronze ingestion
+.PHONY: bronze
+bronze:
+	uv run python data_processing/bronze/ingest_bronze.py
 
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
+## Run silver cleaning
+.PHONY: silver
+silver:
+	uv run python data_processing/silver/clean_data.py
 
+## Run silver validation
+.PHONY: validate
+validate:
+	uv run python data_processing/silver/validate_data.py
+
+## Run feature pipeline
+.PHONY: feature-pipeline
+feature-pipeline:
+	uv run python iris_project/pipelines/feature_pipeline.py
+
+## Run training pipeline
+.PHONY: training-pipeline
+training-pipeline:
+	uv run python iris_project/pipelines/training_pipeline.py
+
+## Run full pipeline (bronze -> silver -> validate -> features -> training)
+.PHONY: full-pipeline
+full-pipeline: bronze silver validate feature-pipeline training-pipeline
 
 
 #################################################################################

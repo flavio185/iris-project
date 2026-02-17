@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "iris_project"
 version = "0.0.1"
-description = "this is iris"
+description = "Iris multiclass classification ML pipeline"
 authors = [
   { name = "Flav" },
 ]
@@ -16,22 +16,42 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-    "pip",
-    "pytest",
+    "boto3",
+    "fastapi",
+    "great-expectations",
+    "loguru",
+    "matplotlib",
+    "mlflow",
+    "pandas",
+    "pyarrow",
+    "pydantic",
     "python-dotenv",
+    "rich",
+    "s3fs",
+    "scikit-learn",
+    "seaborn",
+    "typer",
+    "uvicorn",
+]
+requires-python = "~=3.12.0"
+
+[project.scripts]
+project-cli = "make:app"
+
+[dependency-groups]
+dev = [
+    "pytest",
     "ruff",
 ]
-requires-python = "~=3.10.0"
-
 
 [tool.ruff]
 line-length = 99
 src = ["iris_project"]
-include = ["pyproject.toml", "iris_project/**/*.py"]
+include = ["pyproject.toml", "iris_project/**/*.py", "data_processing/**/*.py", "make.py", "tests/**/*.py"]
 
 [tool.ruff.lint]
-extend-select = ["I"]  # Add import sorting
+extend-select = ["I"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["iris_project"]
+known-first-party = ["iris_project", "data_processing"]
 force-sort-within-sections = true

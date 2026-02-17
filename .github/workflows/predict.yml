@@ -1,0 +1,35 @@
+name: Prediction & Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_uri:
+        description: 'MLflow model URI (e.g. models:/iris-logisticregression/1)'
+        required: true
+        type: string
+      input_path:
+        description: 'Input data path (S3 or local)'
+        required: true
+        type: string
+      output_path:
+        description: 'Output predictions path (S3 or local)'
+        required: true
+        type: string
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run prediction
+        run: uv run project-cli inference-pipeline "${{ inputs.model_uri }}" "${{ inputs.input_path }}" "${{ inputs.output_path }}"
